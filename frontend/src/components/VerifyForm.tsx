@@ -23,7 +23,7 @@ interface AlertItem {
 export function VerifyForm() {
   const { sendCode, verify, loading, error } = useVerification();
   const [step, setStep] = useState<"initial" | "enterEmail" | "enterCode">(
-    "initial"
+    "initial",
   );
   const [email, setEmail] = useState("");
   const [domain, setDomain] = useState("@pukyong.ac.kr");
@@ -78,7 +78,7 @@ export function VerifyForm() {
         `5회 초과: ${new Date(result.lockedUntil).toLocaleTimeString("ko-KR", {
           hour: "2-digit",
           minute: "2-digit",
-        })}까지 인증 불가`
+        })}까지 인증 불가`,
       );
       return;
     }
@@ -103,7 +103,11 @@ export function VerifyForm() {
     if (result.ok) {
       showAlert("success", "인증이 완료되었습니다.");
       clearStorage();
-      // 추가 성공 로직...
+      setStep("initial");
+      setEmail("");
+      setCode("");
+      setExpiresAt(null);
+      setTimer(0);
       return;
     }
     if (result.ok === false)
@@ -120,8 +124,8 @@ export function VerifyForm() {
           showAlert(
             "destructive",
             `5회 초과: ${new Date(
-              result.lockedUntil!
-            ).toLocaleTimeString()}까지 인증 불가`
+              result.lockedUntil!,
+            ).toLocaleTimeString()}까지 인증 불가`,
           );
           break;
       }
@@ -148,7 +152,7 @@ export function VerifyForm() {
     if (!expiresAt) return;
     const update = () => {
       const diff = Math.ceil(
-        (new Date(expiresAt).getTime() - Date.now()) / 1000
+        (new Date(expiresAt).getTime() - Date.now()) / 1000,
       );
       setTimer(diff > 0 ? diff : 0);
     };
