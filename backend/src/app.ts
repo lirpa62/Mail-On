@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 app.post(CODE_END_POINT, async (req, res): Promise<void> => {
   const { email } = req.body as { email: string };
   if (await isExistSubscribers(email)) {
-    res.status(400).json({ status: "subscriber" });
+    return res.status(400).json({ status: "subscriber" }) as any;
   }
   // 인증시간이 남아 있는데 다른 수단으로 재 인증번호 요청을 할 경우
   // 1. expiresAt과 현재 시간 비교 0 보다 크거나 같을 경우
@@ -41,14 +41,22 @@ app.post(CODE_END_POINT, async (req, res): Promise<void> => {
     const { email } = req.body as { email: string };
     const result = await sendVerificationEmail(email);
     if (result.status === "ok") {
-      res.json({ status: result.status, expiresAt: result.expiresAt });
+      return res.json({
+        status: result.status,
+        expiresAt: result.expiresAt,
+      }) as any;
     } else if (result.status === "locked") {
-      res.json({ status: result.status, lockedUntil: result.lockedUntil });
+      return res.json({
+        status: result.status,
+        lockedUntil: result.lockedUntil,
+      }) as any;
     } else if (result.status === "error") {
-      res.json({ status: "error", message: "인증 처리 실패" });
+      return res.json({ status: "error", message: "인증 처리 실패" }) as any;
     }
   } catch (err) {
-    res.status(500).json({ status: "error", message: err || "인증 처리 실패" });
+    return res
+      .status(500)
+      .json({ status: "error", message: err || "인증 처리 실패" }) as any;
   }
 });
 
@@ -62,27 +70,27 @@ app.post(VERIFY_END_POINT, async (req, res): Promise<void> => {
     if (!verifyResult.ok) {
       const status = verifyResult.reason === "locked" ? 423 : 400;
       if (verifyResult.reason === "locked") {
-        res.status(status).json({
+        return res.status(status).json({
           ok: false,
           reason: verifyResult.reason,
           message: verifyResult.message,
           lockedUntil: verifyResult.lockedUntil,
-        });
+        }) as any;
       } else {
-        res.status(status).json({
+        return res.status(status).json({
           ok: false,
           reason: verifyResult.reason,
           message: verifyResult.message,
-        });
+        }) as any;
       }
     }
 
-    res.json({ ok: true });
+    return res.json({ ok: true }) as any;
   } catch (err: any) {
-    res.status(500).json({
+    return res.status(500).json({
       ok: false,
       reason: "error",
       message: err.message || "검증 중 오류가 발생했습니다.",
-    });
+    }) as any;
   }
 });

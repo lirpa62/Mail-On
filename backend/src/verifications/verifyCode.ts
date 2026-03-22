@@ -13,7 +13,7 @@ import bcrypt from "bcrypt";
 
 export async function verifyCode(
   email: string,
-  verifyingCode: string
+  verifyingCode: string,
 ): Promise<VerifyResult> {
   const ATTEMPT_COUNT = 5;
   const LOCKED_MINUTES = 30;
@@ -28,9 +28,18 @@ export async function verifyCode(
   };
 
   try {
-    const { code_hash, attempts, expires_at } = await getEmailVerifications(
-      email
-    );
+    const record = await getEmailVerifications(email).catch(() => null);
+
+    if (!record) {
+      return {
+        ok: false,
+        reason: "expired",
+        message: "인증 요청이 없거나 만료되었습니다.",
+      };
+    }
+
+    const { code_hash, attempts, expires_at } =
+      await getEmailVerifications(email);
     if (!code_hash)
       return { ok: false, reason: "expired", message: "인증 요청이 없습니다." };
 
@@ -51,9 +60,8 @@ export async function verifyCode(
       expiresAt >= currentTime &&
       (attempts ?? 0) <= ATTEMPT_COUNT
     ) {
-      const { current_board_number, last_processed_link } = await getBoardState(
-        BOARD_ID
-      );
+      const { current_board_number, last_processed_link } =
+        await getBoardState(BOARD_ID);
       const lastProcessedLink = boardUrl + last_processed_link;
       const detail = await fetchJobDetail(lastProcessedLink);
       if (!last_processed_link) throw new Error("No last processed link");
@@ -75,7 +83,7 @@ export async function verifyCode(
         📬 월요일~금요일 오전 10시, 오후 2시, 오후 6시 총 3번 메일이 발송됩니다.<br>
         ⚠️ 단, 최신 게시물이 없을 경우 발송되지 않습니다!
         </div>
-        `
+        `,
       );
 
       sendEmail(email, detail.title, detail.content);
@@ -92,16 +100,16 @@ export async function verifyCode(
         0,
         null,
         lockedUntil.toISOString(),
-        updatedTime.toISOString()
+        updatedTime.toISOString(),
       );
       console.log(
-        "⚠️ Verifying code lockout due to too many failed verification attempts"
+        "⚠️ Verifying code lockout due to too many failed verification attempts",
       );
       return {
         ok: false,
         reason: "locked",
         message: `5회 이상 실패하여 ${transformDate(
-          lockedUntil
+          lockedUntil,
         )}까지 잠금되었습니다.`,
         lockedUntil: lockedUntil.toISOString(),
       };
@@ -113,7 +121,7 @@ export async function verifyCode(
       (attempts ?? 0) + 1,
       expires_at!,
       null,
-      new Date().toISOString()
+      new Date().toISOString(),
     );
     return {
       ok: false,
