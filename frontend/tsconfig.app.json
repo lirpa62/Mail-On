@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // React 18+ JSX 변환 방식
+    "jsx": "react-jsx"
+  },
+  "include": ["src"] // 실제 TSX/TS 파일이 들어있는 곳
+}

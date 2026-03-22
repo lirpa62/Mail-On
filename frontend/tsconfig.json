@@ -1,0 +1,15 @@
+{
+  // 이 파일은 IDE용 진입점(entry point)이므로 실제 소스는 tsconfig.app.json, tsconfig.node.json에서 가져옵니다
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    // import "@/foo" 같은 경로 별칭(alias) 사용을 위한 설정
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

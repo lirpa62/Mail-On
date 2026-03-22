@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Vite 설정 파일 등 Node.js에서만 쓰는 .ts를 위해
+    "module": "ESNext",
+    "moduleResolution": "node"
+  },
+  "include": ["vite.config.ts", "scripts"] // 필요하다면 스크립트 폴더도 추가
+}

@@ -1,0 +1,17 @@
+{
+  "name": "mailon-monorepo",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "cors": "^2.8.5",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/node": "^24.0.13"
+  }
+}
