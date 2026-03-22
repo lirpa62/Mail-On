@@ -9,11 +9,13 @@ export function useVerification() {
   //   return r.ok === false;
   // }
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
   async function sendCode(email: string): Promise<SendCodeResult> {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/verifications", {
+      const res = await fetch(`${API_URL}/api/verifications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -44,7 +46,7 @@ export function useVerification() {
     setError(null);
 
     try {
-      const res = await fetch("/api/verifications/verify", {
+      const res = await fetch(`${API_URL}/api/verifications/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
