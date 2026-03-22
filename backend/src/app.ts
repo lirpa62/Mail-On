@@ -24,6 +24,10 @@ app.listen(PORT, async () => {
 app.use(cors({ origin: ALLOW_CORS_URL }));
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 // 1) 인증번호 요청
 app.post(CODE_END_POINT, async (req, res): Promise<void> => {
   const { email } = req.body as { email: string };
