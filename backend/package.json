@@ -23,6 +23,7 @@
     "p-limit": "^6.2.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
     "@types/node-cron": "^3.0.11",
