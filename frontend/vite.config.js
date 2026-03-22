@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    proxy: { "/api": import.meta.env.VITE_API_URL || "http://localhost:3000" },
+    proxy: { "/api": "http://localhost:3000" },
   },
   resolve: {
     alias: {
