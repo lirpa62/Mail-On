@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ALLOW_CORS_URL = "http://localhost:5173";
+const ALLOW_CORS_URL = process.env.ALLOW_CORS_URL || "http://localhost:5173";
 const CODE_END_POINT = "/api/verifications";
 const VERIFY_END_POINT = "/api/verifications/verify";
 
