@@ -1,0 +1,29 @@
+name: Trigger Mail-On Crawling
+
+on:
+  schedule:
+    # 매일 9시~21시 KST (= UTC 0~12시) 30분마다
+    - cron: "*/30 0-12 * * *"
+  # 수동 실행도 가능
+  workflow_dispatch:
+
+jobs:
+  trigger-crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger processJobs on Koyeb server
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.SERVER_URL }}/api/cron/process" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 120)
+
+          echo "HTTP status: $response"
+
+          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
+            echo "✅ Crawling triggered successfully"
+          else
+            echo "❌ Failed with status $response"
+            exit 1
+          fi
