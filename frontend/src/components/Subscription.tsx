@@ -5,7 +5,7 @@ export function Subscription() {
         <h1>
           부경대 컴퓨터•인공지능공학부 <br />
           취업게시물을 <br />
-          평일 오전 10시, 오후 2시, 6시 <br />
+          매일 오전 9시 ~ 오후 9시 <br />
           메일로 보내드릴게요!
         </h1>
         <p className="text-neutral-400 text-[calc(2rem*0.5)] font-normal mt-[2.5rem]">
