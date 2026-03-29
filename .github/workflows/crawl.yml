@@ -11,6 +11,21 @@ jobs:
   trigger-crawl:
     runs-on: ubuntu-latest
     steps:
+      - name: Wake up Koyeb server
+        run: |
+          echo "⏳ Waking up server..."
+          for i in $(seq 1 12); do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.SERVER_URL }}/" --max-time 15)
+            echo "Attempt $i: HTTP $status"
+            if [ "$status" -eq 200 ]; then
+              echo "✅ Server is ready"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "⚠️ Server did not respond after 2 minutes"
+          exit 1
+
       - name: Trigger processJobs on Koyeb server
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
