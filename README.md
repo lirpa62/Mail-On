@@ -55,7 +55,7 @@
 
 ### Infrastructure
 
-![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat&logo=supabase&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 ![Koyeb](https://img.shields.io/badge/Koyeb-121212?style=flat&logo=koyeb&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=githubactions&logoColor=white)
@@ -73,15 +73,15 @@
 │  Vercel          │                │  Koyeb           │
 └──────────────────┘                └────────┬─────────┘
                                              │
-         ┌───────────────────┐               │  Supabase Client
+         ┌───────────────────┐               │  Firebase Admin SDK
          │                   │               │
          │  GitHub Actions   │  POST /api/   │
          │  (cron trigger)   │──cron/process─┤
          │                   │               │
          └───────────────────┘      ┌────────▼─────────┐
                                     │                  │
-                                    │  Supabase        │
-                                    │  (PostgreSQL)    │
+                                    │  Firestore       │
+                                    │  (NoSQL DB)      │
                                     │                  │
                                     └──────────────────┘
 ```
@@ -112,9 +112,9 @@ Mail-On/
 ├── backend/                    # Express + TypeScript
 │   └── src/
 │       ├── processors/         # 메일 발송, 게시물 처리
-│       ├── repositories/       # Supabase DB 접근 계층
+│       ├── repositories/       # Firestore DB 접근 계층
 │       ├── scrapers/           # 게시판 크롤링
-│       ├── supabase/           # Supabase 클라이언트 설정
+│       ├── firebase/           # Firebase Admin SDK 설정
 │       ├── verifications/      # 인증번호 발송·검증 로직
 │       ├── types/              # TypeScript 타입 정의
 │       └── app.ts              # Express 서버 엔트리 포인트
@@ -129,7 +129,8 @@ Mail-On/
 ### 사전 준비
 
 - Node.js 18+
-- Supabase 프로젝트 (테이블: `subscribers`, `email_verifications`, `board_state`)
+- Firebase 프로젝트 (Firestore 컬렉션: `subscribers`, `email_verifications`, `board_state`)
+- Firebase 서비스 계정 키 (Project Settings → Service accounts → Generate new private key)
 - Gmail 앱 비밀번호
 
 ### Frontend
@@ -150,8 +151,8 @@ npm install
 # .env 파일 생성 (아래 항목 채워넣기)
 cat > .env << EOF
 PORT=3000
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
+# Firebase 서비스 계정 JSON 전체를 한 줄 문자열로 (예: '{"type":"service_account",...}')
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"...","private_key":"...","client_email":"...", ... }'
 EMAIL=your_gmail@gmail.com
 PASSWORD=your_app_password
 ALLOW_CORS_URL=http://localhost:5173
@@ -168,7 +169,7 @@ npm run dev
 | :--------------- | :------------- | :------------------------------------------------ |
 | Frontend         | Vercel         | `main` 브랜치 push 시 자동 배포                   |
 | Backend          | Koyeb          | `main` 브랜치 push 시 자동 배포 (무료 티어)       |
-| Database         | Supabase       | PostgreSQL 기반 클라우드 DB                        |
+| Database         | Firebase Firestore | NoSQL 클라우드 DB (무료 Spark 플랜)             |
 | Cron Scheduler   | GitHub Actions | 매일 9시~21시 30분마다 서버 크롤링 트리거             |
  
 ### GitHub Secrets 설정

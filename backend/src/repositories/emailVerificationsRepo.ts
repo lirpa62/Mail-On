@@ -1,6 +1,6 @@
-import { supabase } from "../supabase/supabase";
+import { db } from "../firebase/firebase";
 
-const TABLE = "email_verifications";
+const COLLECTION = "email_verifications";
 
 export interface EmailVerifications {
   id: string;
@@ -13,6 +13,11 @@ export interface EmailVerifications {
   created_at: string;
 }
 
+// email을 문서 ID로 사용
+function docIdFromEmail(email: string): string {
+  return encodeURIComponent(email);
+}
+
 // 삽입
 export async function insertEmailVerifications(
   email: string,
@@ -21,59 +26,76 @@ export async function insertEmailVerifications(
   expires_at: string,
   locked_until: string | null
 ): Promise<EmailVerifications> {
-  const payload: Partial<EmailVerifications> = {
-    email: email,
-    code_hash: code_hash,
-    attempts: attempts,
-    expires_at: expires_at,
-    locked_until: locked_until,
+  const now = new Date().toISOString();
+  const payload = {
+    email,
+    code_hash,
+    attempts,
+    expires_at,
+    locked_until,
+    created_at: now,
+    updated_at: now,
   };
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert(payload)
-    .select()
-    .single();
-  if (error) {
+  try {
+    const docId = docIdFromEmail(email);
+    const ref = db.collection(COLLECTION).doc(docId);
+    await ref.set(payload);
+    const result: EmailVerifications = { id: docId, ...payload };
+    console.log("Email Verifications inserted:", result);
+    return result;
+  } catch (error) {
     console.error("Email Verifications insert failed:", error);
     throw error;
-  } else {
-    console.log("Email Verifications inserted:", data);
   }
-  return data!;
 }
 
 // 조회
 export async function getEmailVerifications(
   email: string
 ): Promise<EmailVerifications> {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("email", email)
-    .single();
-  if (error) {
+  try {
+    const snap = await db
+      .collection(COLLECTION)
+      .doc(docIdFromEmail(email))
+      .get();
+    if (!snap.exists) {
+      const err = new Error(`Email verification not found for ${email}`);
+      console.error("Email Verifications select failed:", err);
+      throw err;
+    }
+    const result: EmailVerifications = {
+      id: snap.id,
+      ...(snap.data() as Omit<EmailVerifications, "id">),
+    };
+    console.log("Email Verifications selected:", result);
+    return result;
+  } catch (error) {
     console.error("Email Verifications select failed:", error);
     throw error;
-  } else {
-    console.log("Email Verifications selected:", data);
   }
-  return data!;
 }
 
 export async function isExistEmailVerifications(
   email: string
 ): Promise<boolean> {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("email", email)
-    .single();
-  if (error) {
+  try {
+    const snap = await db
+      .collection(COLLECTION)
+      .doc(docIdFromEmail(email))
+      .get();
+    if (!snap.exists) {
+      console.error("This email is not exist in Email Verifications:", email);
+      return false;
+    }
+    console.log("This email is already exist in Email Verifications:", {
+      id: snap.id,
+      ...snap.data(),
+    });
+    return true;
+  } catch (error) {
     console.error("This email is not exist in Email Verifications:", error);
     return false;
   }
-  console.log("This email is already exist in Email Verifications:", data);
-  return true;
 }
 
 // 업데이트
@@ -85,66 +107,75 @@ export async function updateEmailVerifications(
   locked_until: string | null,
   updated_at: string
 ): Promise<EmailVerifications> {
-  const payload: Partial<EmailVerifications> = {
-    email: email,
-    code_hash: code_hash,
-    attempts: attempts,
-    expires_at: expires_at,
-    locked_until: locked_until,
-    updated_at: updated_at,
+  const payload = {
+    email,
+    code_hash,
+    attempts,
+    expires_at,
+    locked_until,
+    updated_at,
   };
-
-  const { data, error } = await supabase
-    .from(TABLE)
-    .update(payload)
-    .eq("email", email)
-    .select()
-    .single();
-  if (error) {
+  try {
+    const ref = db.collection(COLLECTION).doc(docIdFromEmail(email));
+    await ref.set(payload, { merge: true });
+    const snap = await ref.get();
+    if (!snap.exists) {
+      throw new Error(`Email verification not found for ${email}`);
+    }
+    const result: EmailVerifications = {
+      id: snap.id,
+      ...(snap.data() as Omit<EmailVerifications, "id">),
+    };
+    console.log("Email Verifications updated:", result);
+    return result;
+  } catch (error) {
     console.error("Email Verifications update failed:", error);
     throw error;
-  } else {
-    console.log("Email Verifications updated:", data);
   }
-  return data!;
 }
 
 export async function updateEmailVerificationsAttempt(
   email: string,
   attempts: number
 ): Promise<EmailVerifications> {
-  const payload: Partial<EmailVerifications> = {
-    email: email,
-    attempts: attempts,
+  const payload = {
+    email,
+    attempts,
+    updated_at: new Date().toISOString(),
   };
-
-  const { data, error } = await supabase
-    .from(TABLE)
-    .update(payload)
-    .eq("email", email)
-    .select()
-    .single();
-  if (error) {
+  try {
+    const ref = db.collection(COLLECTION).doc(docIdFromEmail(email));
+    await ref.set(payload, { merge: true });
+    const snap = await ref.get();
+    if (!snap.exists) {
+      throw new Error(`Email verification not found for ${email}`);
+    }
+    const result: EmailVerifications = {
+      id: snap.id,
+      ...(snap.data() as Omit<EmailVerifications, "id">),
+    };
+    console.log("Email Verifications Attempt updated:", result);
+    return result;
+  } catch (error) {
     console.error("Email Verifications Attempt update failed:", error);
     throw error;
-  } else {
-    console.log("Email Verifications Attempt updated:", data);
   }
-  return data!;
 }
 
 export async function deleteEmailVerifications(email: string) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .delete()
-    .eq("email", email)
-    .select()
-    .single();
-  if (error) {
+  try {
+    const ref = db.collection(COLLECTION).doc(docIdFromEmail(email));
+    const snap = await ref.get();
+    if (!snap.exists) {
+      const err = new Error(`Email verification not found for ${email}`);
+      console.error("Email Verifications delete failed:", err);
+      throw err;
+    }
+    await ref.delete();
+    console.log("Email Verifications deleted:", { id: snap.id, ...snap.data() });
+    return;
+  } catch (error) {
     console.error("Email Verifications delete failed:", error);
     throw error;
-  } else {
-    console.log("Email Verifications deleted:", data);
   }
-  return;
 }
